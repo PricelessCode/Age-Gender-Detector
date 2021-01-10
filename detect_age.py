@@ -26,3 +26,4 @@ age_prototxt_path = os.path.join([args["age"], "age_deploy.prototxt"])
 age_weights_path = os.path.join([args["age"], "age_net.caffemodel"])
 age_net = cv2.dnn.readNet(age_prototxt_path, age_weights_path)
 
+

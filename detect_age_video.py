@@ -68,7 +68,7 @@ def detect_and_predict_age(frame, face_net, age_net, min_conf=0.5):
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/gadot.png", "confidence": 0.5}
+args = {"face": "./face_detector", "age": "./age_detector", "image": "images/gadot.png", "confidence": 0.7}
 
 # Load pretrained Face detector model
 print("[INFO] Loading face detector model...")
@@ -91,5 +91,32 @@ time.sleep(2.0)
 while True:
 	# Grab the frame from the threaded video stream and resize it to have a maximum width of 400 pixels
 	frame = vs.read()
+	frame = imutils.resize(frame, width=400)
+
+	# Detect faces in the frame, and for each face in the frame, predict the age
+	results = detect_and_predict_age(frame, face_net, age_net, min_conf=args["confidence"])
+
+	key = None
+	# Loop over the results
+	for r in results:
+		
+		# Text for the bounding box
+		text = "{}: {:.2f}%".format(r["age"][0], r["age"][1] * 100)
+
+		# Draw the bounding box of the face along with the associated predicted age
+		startX, startY, endX, endY = r["loc"]
+		y = startY - 10 if startY - 10 > 10 else startY + 10
+		cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+		cv2.putText(frame, text, (startX, y), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (0, 0, 255), 2)
+	
+	# Show the output frame
 	cv2.imshow("Frame", frame)
-	key = cv2.waitKey(0)
+	key = cv2.waitKey(1) & 0xFF
+	
+	# if the 'q' key was pressed, break from the loop
+	if key == ord("q"):
+		break
+	
+# Do clean up	
+cv2.destroyAllWindows()
+vs.stop()

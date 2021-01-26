@@ -3,6 +3,7 @@ import cv2
 import argparse
 import os
 
+
 # # Code for parsing arguments from terminal
 # ap = argparse.ArgumentParser()
 # ap.add_argument("-i", "--image", required=True, help="Path to input image")

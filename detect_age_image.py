@@ -14,7 +14,7 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/gadot.png", "confidence": 0.5}
+args = {"face": "./face_detector", "age": "./age_detector", "image": "images/ford.png", "confidence": 0.5}
 
 AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
 	"(38-43)", "(48-53)", "(60-100)"]

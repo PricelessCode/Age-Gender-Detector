@@ -39,7 +39,7 @@ def detect_and_predict_age(frame, face_net, age_net, min_conf=0.5):
 			if face.shape[0] < 20 or face.shape[1] < 20:
 				continue
 
-			faceBlob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=False)
+			faceBlob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=True)
 
 			# Make prediction on the age and find the age bucket with the largest corresponding probability
 			age_net.setInput(faceBlob)

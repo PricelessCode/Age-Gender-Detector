@@ -21,8 +21,8 @@ AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
 
 # Load pretrained Face detector model
 print("[INFO] Loading face detector model...")
-face_prototxt_path = os.path.join(args["face"], "face_deploy.prototxt")
-face_weights_path = os.path.join(args["face"], "res10_300x300_ssd_iter_140000.caffemodel")
+face_prototxt_path = os.path.join(args["face"], "weights-prototxt.txt")
+face_weights_path = os.path.join(args["face"], "res_ssd_300Dim.caffeModel")
 face_net = cv2.dnn.readNet(face_prototxt_path, face_weights_path)
 
 # Load pretrained age detection model
@@ -60,7 +60,7 @@ for i in range(detections.shape[2]):
 		# cv2.waitKey(0)
 		
 		faceBlob =cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746),
-			swapRB=False)
+			swapRB=True)
 
 		# # Make Predictions on the age and find the age bucket with the largest corresponding probability
 		age_net.setInput(faceBlob)

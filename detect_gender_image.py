@@ -14,15 +14,14 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "gender": "./gender_detector", "image": "images/curtis.png", "confidence": 0.5}
+args = {"face": "./face_detector", "gender": "./gender_detector", "image": "images/gadot.png", "confidence": 0.5}
 
 GENDER_BUCKET = ['Male', 'Female']
 
 # Load pretrained Face detector model
 print("[INFO] Loading face detector model...")
-face_prototxt_path = os.path.join(args["face"], "face_deploy.prototxt")
-face_weights_path = os.path.join(args["face"], "res10_300x300_ssd_iter_140000.caffemodel")
-face_net = cv2.dnn.readNet(face_prototxt_path, face_weights_path)
+face_xml = os.path.join(args["face"], "haarcascade_frontalface_default.xml")
+face_cascade = cv2.CascadeClassifier(face_xml)
 
 # Load pretrained age detection model
 print("[INFO] Loading gender detector model...")
@@ -30,52 +29,41 @@ gender_prototxt_path = os.path.join(args["gender"], "gender_deploy.prototxt")
 gender_weights_path = os.path.join(args["gender"], "gender_net.caffemodel")
 gender_net = cv2.dnn.readNet(gender_prototxt_path, gender_weights_path)
 
-# Load the input image and construct an input blob for the image
+# Load the input image and construct a gray scaled image
 image = cv2.imread(args["image"])
-(h, w) = image.shape[:2] # image.shape looks like (height, width, n of channels)
-blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), (104.0, 177.0, 123.0))
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-# Pass the blob through the network and obtain the face detections
-print("[INFO] computing face detections")
-face_net.setInput(blob)
-detections = face_net.forward()
+detections = face_cascade.detectMultiScale(
+	gray,
+	scaleFactor=1.1,
+	minNeighbors=5,
+	minSize=(30, 30),
+	flags=cv2.CASCADE_SCALE_IMAGE
+)
 
 # Loop over detections
-for i in range(detections.shape[2]):
-	# Extract confidence
-	confidence = detections[0, 0, i, 2]
+for x, y, w, h in detections:
 
-	# Make sure the detection confidence is higher than the minimum confidence
-	if confidence > args["confidence"]:
-		# Extract X, Y coordinates of the bounding box for the object
-		box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-		startX, startY, endX, endY = box.astype("int")
+	# Extract the ROI of the face and construct a blob from only the face ROI
+	face = image[y:y+h, x:x+w]
+	
+	faceBlob =cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746),
+		swapRB=False)
 
-		# Extract the ROI of the face and construct a blob from only the face ROI
-		face = image[startY:endY, startX:endX]
-		
-		# # Code for checking the extracted face images.
-		# cv2.imshow("Face Image", face)
-		# cv2.waitKey(0)
-		
-		faceBlob =cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746),
-			swapRB=True)
+	# # Make Predictions on gender and find the age bucket with the largest corresponding probability
+	gender_net.setInput(faceBlob)
+	preds = gender_net.forward()
+	i = preds[0].argmax()
+	gender = GENDER_BUCKET[i]
+	gender_confidence = preds[0][i]
 
-		# # Make Predictions on gender and find the age bucket with the largest corresponding probability
-		gender_net.setInput(faceBlob)
-		preds = gender_net.forward()
-		i = preds[0].argmax()
-		gender = GENDER_BUCKET[i]
-		gender_confidence = preds[0][i]
+	# Display the predicted age to the terminal
+	text = "{}: {:.2f}%".format(gender, gender_confidence * 100)
+	print("[INFO] {}".format(text))
 
-		# Display the predicted age to the terminal
-		text = "{}: {:.2f}%".format(gender, gender_confidence * 100)
-		print("[INFO] {}".format(text))
-
-		# Draw the bounding box of the face along with the associated predicted age
-		y = startY - 10 if startY - 10 > 10 else startY + 10
-		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
-		cv2.putText(image, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+	# Draw the bounding box of the face along with the associated predicted age
+	cv2.rectangle(image, (x, y), (x+h, y+h), (0, 255, 0), 2)
+	cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
 cv2.imshow("Image", image)
 cv2.waitKey(0)

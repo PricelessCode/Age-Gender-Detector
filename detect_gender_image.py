@@ -14,7 +14,7 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "gender": "./gender_detector", "image": "images/gadot.png", "confidence": 0.5}
+args = {"face": "./face_detector", "gender": "./gender_detector", "image": "images/old_woman.png", "confidence": 0.5}
 
 GENDER_BUCKET = ['Male', 'Female']
 

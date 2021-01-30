@@ -6,7 +6,7 @@ import time
 import cv2
 import os
 
-def detect_and_predict_age(frame, face_net, age_net, min_conf=0.5):
+def detect_and_predict_age(frame, face_cascade, age_net):
 
 	# Define the list of age buckets our age detector will predict
 	AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)", "(38-43)", "(48-53)", "(60-100)"]
@@ -14,47 +14,37 @@ def detect_and_predict_age(frame, face_net, age_net, min_conf=0.5):
 	# Initialize results list
 	results = []
 
-	# Grab the dimensions of the frame and then construct a blob from it
-	(h, w) = frame.shape[:2]
-	blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
-
-	# Pass the blob through the network and obtain the face detections
-	face_net.setInput(blob)
-	detections = face_net.forward()
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	
+	detections = face_cascade.detectMultiScale(
+		gray,
+		scaleFactor=1.1,
+		minNeighbors=5,
+		minSize=(30, 30),
+		flags=cv2.CASCADE_SCALE_IMAGE
+	)
 
 	# Loop over the detections
-	for i in range(0, detections.shape[2]):
-		# extract the confidence (i.e., probability) associated with the prediction
-		confidence = detections[0, 0, i, 2]
-		# filter out weak detections by ensuring the confidence is greater than the minimum confidence
-		if confidence > min_conf:
-			# Compute the (x, y)-coordinates of the bounding box for the object
-			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-			startX, startY, endX, endY = box.astype("int")
-			# extract the ROI of the face
-			face = frame[startY:endY, startX:endX]
+	for x, y, w, h in detections:
+		
+		face = frame[x:x+h, y:y+h]
 
-			# ensure the face ROI is sufficiently large
-			# To filter out false-positive face detections in frame and age classification won't be accurate for faces that are far away from the camera
-			if face.shape[0] < 20 or face.shape[1] < 20:
-				continue
+		faceBlob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=True)
 
-			faceBlob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=True)
+		# Make prediction on the age and find the age bucket with the largest corresponding probability
+		age_net.setInput(faceBlob)
+		preds = age_net.forward()
+		i = preds[0].argmax()
+		age = AGE_BUCKETS[i]
+		age_confidence = preds[0][i]
 
-			# Make prediction on the age and find the age bucket with the largest corresponding probability
-			age_net.setInput(faceBlob)
-			preds = age_net.forward()
-			i = preds[0].argmax()
-			age = AGE_BUCKETS[i]
-			age_confidence = preds[0][i]
+		# Construct a dictionary consisting of both the face bounding box location along with the age prediction, then update our results list
+		d = {
+			"loc": (x, y, x + h, y + h),
+			"age": (age, age_confidence)
+		}
 
-			# Construct a dictionary consisting of both the face bounding box location along with the age prediction, then update our results list
-			d = {
-				"loc": (startX, startY, endX, endY),
-				"age": (age, age_confidence)
-			}
-
-			results.append(d)
+		results.append(d)
 
 	return results
 
@@ -63,18 +53,16 @@ def detect_and_predict_age(frame, face_net, age_net, min_conf=0.5):
 # ap.add_argument("-i", "--image", required=True, help="Path to input image")
 # ap.add_argument("-f", "--face", required=True, help="Path to face detector model directory")
 # ap.add_argument("-a", "--age", required=True, help="Path to age detector model directory")
-# ap.add_argument("-c", "--confidence", type=float, default=0.5, help="Minimum probability to filter weak detections")
 
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/gadot.png", "confidence": 0.7}
+args = {"face": "./face_detector", "age": "./age_detector"}
 
 # Load pretrained Face detector model
 print("[INFO] Loading face detector model...")
-face_prototxt_path = os.path.join(args["face"], "face_deploy.prototxt")
-face_weights_path = os.path.join(args["face"], "res10_300x300_ssd_iter_140000.caffemodel")
-face_net = cv2.dnn.readNet(face_prototxt_path, face_weights_path)
+face_xml = os.path.join(args["face"], "haarcascade_frontalface_default.xml")
+face_cascade = cv2.CascadeClassifier(face_xml)
 
 # Load pretrained age detection model
 print("[INFO] Loading age detector model...")
@@ -94,7 +82,7 @@ while True:
 	frame = imutils.resize(frame, width=400)
 
 	# Detect faces in the frame, and for each face in the frame, predict the age
-	results = detect_and_predict_age(frame, face_net, age_net, min_conf=args["confidence"])
+	results = detect_and_predict_age(frame, face_cascade, age_net)
 
 	key = None
 	# Loop over the results

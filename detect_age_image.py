@@ -14,7 +14,7 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/curtis.png", "confidence": 0.5}
+args = {"face": "./face_detector", "age": "./age_detector", "image": "images/ford.png", "confidence": 0.5}
 
 AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
 	"(38-43)", "(48-53)", "(60-100)"]
@@ -30,7 +30,7 @@ age_prototxt_path = os.path.join(args["age"], "age_deploy.prototxt")
 age_weights_path = os.path.join(args["age"], "age_net.caffemodel")
 age_net = cv2.dnn.readNet(age_prototxt_path, age_weights_path)
 
-# Load the input image and construct an input blob for the image
+# Load the input image and construct a gray scaled image
 image = cv2.imread(args["image"])
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -43,7 +43,7 @@ detections = face_cascade.detectMultiScale(
 )
 
 # Loop over detections
-for (x, y, w, h) in detections:
+for x, y, w, h in detections:
 
 	# Extract the ROI of the face and construct a blob from only the face ROI
 	face = image[x:x+h, y:y+h]

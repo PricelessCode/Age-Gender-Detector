@@ -27,7 +27,7 @@ def detect_and_predict_age(frame, face_cascade, age_net):
 	# Loop over the detections
 	for x, y, w, h in detections:
 		
-		face = frame[x:x+h, y:y+h]
+		face = frame[y:y+h, x:x+w]
 
 		faceBlob = cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=True)
 

@@ -46,8 +46,11 @@ detections = face_cascade.detectMultiScale(
 for x, y, w, h in detections:
 
 	# Extract the ROI of the face and construct a blob from only the face ROI
-	face = image[x:x+h, y:y+h]
-	
+	print(x, y, w, h)
+	face = image[y:y+h, x:x+w]
+
+	cv2.imshow("DDF", face)
+
 	faceBlob =cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746),
 		swapRB=True)
 

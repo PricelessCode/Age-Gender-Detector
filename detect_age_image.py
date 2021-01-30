@@ -14,7 +14,7 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/ford.png", "confidence": 0.5}
+args = {"face": "./face_detector", "age": "./age_detector", "image": "images/old_woman.png", "confidence": 0.5}
 
 AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
 	"(38-43)", "(48-53)", "(60-100)"]
@@ -46,13 +46,10 @@ detections = face_cascade.detectMultiScale(
 for x, y, w, h in detections:
 
 	# Extract the ROI of the face and construct a blob from only the face ROI
-	print(x, y, w, h)
 	face = image[y:y+h, x:x+w]
 
-	cv2.imshow("DDF", face)
-
 	faceBlob =cv2.dnn.blobFromImage(face, 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746),
-		swapRB=True)
+		swapRB=False)
 
 	# # Make Predictions on the age and find the age bucket with the largest corresponding probability
 	age_net.setInput(faceBlob)

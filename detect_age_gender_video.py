@@ -88,13 +88,12 @@ gender_net = cv2.dnn.readNet(gender_prototxt_path, gender_weights_path)
 
 # Initialize the video stream and allow the camera sonsor to warm up
 print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
-time.sleep(2.0)
+vc = cv2.VideoCapture(0)
 
 # Loop over the frames from the video stream
 while True:
 	# Grab the frame from the threaded video stream and resize it to have a maximum width of 400 pixels
-	frame = vs.read()
+	_, frame = vc.read()
 	frame = imutils.resize(frame, width=400)
 
 	# Detect faces in the frame, and for each face in the frame, predict the age
@@ -109,16 +108,15 @@ while True:
 
 		# Draw the bounding box of the face along with the associated predicted age
 		startX, startY, endX, endY = r["loc"]
-		y = startY - 10 if startY - 10 > 10 else startY + 10
 		cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
 
-		cv2.putText(frame, age_text, (startX, y), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (0, 0, 255), 1)
+		cv2.putText(frame, age_text, (startX, startY), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (0, 0, 255), 1)
 
 		# Text for the bounding box
 		gender_text = "{}: {:.2f}%".format(r["gender"][0], r["gender"][1] * 100)
 
 		# Gender prediction text
-		cv2.putText(frame, gender_text, (startX, y - 25), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (255, 0, 0), 1)
+		cv2.putText(frame, gender_text, (startX, startY - 25), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (255, 0, 0), 1)
 	
 	# Show the output frame
 	cv2.imshow("Frame", frame)
@@ -128,6 +126,6 @@ while True:
 	if key == ord("q"):
 		break
 	
-# Do clean up	
+# Do clean up
+vc.release()
 cv2.destroyAllWindows()
-vs.stop()

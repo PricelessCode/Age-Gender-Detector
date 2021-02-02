@@ -40,7 +40,7 @@ def detect_and_predict_age(frame, face_cascade, age_net):
 
 		# Construct a dictionary consisting of both the face bounding box location along with the age prediction, then update our results list
 		d = {
-			"loc": (x, y, x + h, y + h),
+			"loc": (x, y, x + w, y + h),
 			"age": (age, age_confidence)
 		}
 

@@ -11,7 +11,7 @@ def detect_and_predict_age(frame, face_cascade, age_net):
 	# Define the list of age buckets our age detector will predict
 	AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)", "(38-43)", "(48-53)", "(60-100)"]
 
-	GENDER_BUCKET = ['\u2642', '\u2640']
+	GENDER_BUCKET = ['Male', 'Female']
 
 	# Initialize results list
 	results = []
@@ -49,7 +49,7 @@ def detect_and_predict_age(frame, face_cascade, age_net):
 
 		# Construct a dictionary consisting of both the face bounding box location along with the age prediction, then update our results list
 		d = {
-			"loc": (x, y, x + h, y + h),
+			"loc": (x, y, x + w, y + h),
 			"age": (age, age_confidence),
 			"gender": (gender, gender_confidence)
 		}
@@ -110,15 +110,15 @@ while True:
 		# Draw the bounding box of the face along with the associated predicted age
 		startX, startY, endX, endY = r["loc"]
 		y = startY - 10 if startY - 10 > 10 else startY + 10
-		cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+		cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
 
-		cv2.putText(frame, age_text, (startX, y), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (0, 0, 255), 2)
+		cv2.putText(frame, age_text, (startX, y), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (0, 0, 255), 1)
 
 		# Text for the bounding box
 		gender_text = "{}: {:.2f}%".format(r["gender"][0], r["gender"][1] * 100)
 
 		# Gender prediction text
-		cv2.putText(frame, gender_text, (startX, y - 25), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (255, 0, 0), 2)
+		cv2.putText(frame, gender_text, (startX, y - 25), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.45, (255, 0, 0), 1)
 	
 	# Show the output frame
 	cv2.imshow("Frame", frame)

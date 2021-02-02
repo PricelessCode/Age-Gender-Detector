@@ -14,7 +14,7 @@ import os
 # args = vars(ap.parse_args)
 
 # Temporary variables for testing
-args = {"face": "./face_detector", "age": "./age_detector", "image": "images/baby.png", "confidence": 0.5}
+args = {"face": "./face_detector", "age": "./age_detector", "image": "images/ford.png", "confidence": 0.5}
 
 AGE_BUCKETS = ["(0-2)", "(4-6)", "(8-12)", "(15-20)", "(25-32)",
 	"(38-43)", "(48-53)", "(60-100)"]
@@ -36,10 +36,8 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 detections = face_cascade.detectMultiScale(
 	gray,
-	scaleFactor=1.1,
-	minNeighbors=5,
-	minSize=(30, 30),
-	flags=cv2.CASCADE_SCALE_IMAGE
+	scaleFactor=1.0485258,
+	minNeighbors=6,
 )
 
 # Loop over detections
@@ -63,7 +61,7 @@ for x, y, w, h in detections:
 	print("[INFO] {}".format(text))
 
 	# Draw the bounding box of the face along with the associated predicted age
-	cv2.rectangle(image, (x, y), (x+h, y+h), (0, 255, 0), 2)
+	cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
 	cv2.putText(image, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
 cv2.imshow("Image", image)

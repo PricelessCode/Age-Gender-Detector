@@ -16,7 +16,7 @@ import os
 # Temporary variables for testing
 args = {"face": "./face_detector", "gender": "./gender_detector", "image": "images/old_woman.png", "confidence": 0.5}
 
-GENDER_BUCKET = ['Male', 'Female']
+GENDER_BUCKET = ['M', 'F']
 
 # Load pretrained Face detector model
 print("[INFO] Loading face detector model...")
@@ -68,4 +68,3 @@ for x, y, w, h in detections:
 cv2.imshow("Image", image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-		

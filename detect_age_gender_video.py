@@ -94,7 +94,7 @@ vc = cv2.VideoCapture(0)
 while True:
 	# Grab the frame from the threaded video stream and resize it to have a maximum width of 400 pixels
 	_, frame = vc.read()
-	frame = imutils.resize(frame, width=400)
+	frame = imutils.resize(frame, width=600)
 
 	# Detect faces in the frame, and for each face in the frame, predict the age
 	results = detect_and_predict_age(frame, face_cascade, age_net)
